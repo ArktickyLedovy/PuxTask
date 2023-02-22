@@ -1,5 +1,7 @@
-﻿using PuxTask.Abstract;
+﻿using Microsoft.Extensions.Logging;
+using PuxTask.Abstract;
 using PuxTask.Common.Entities;
+using System.Linq.Expressions;
 using FileInfo = PuxTask.Common.Entities.FileInfo;
 
 namespace PuxTask.Core
@@ -8,83 +10,121 @@ namespace PuxTask.Core
     {
         private readonly IFileService _fileService;
         private readonly IRecordService _recordService;
-        public ReportService(IFileService fileService, IRecordService recordService)
+        private readonly ILogger<ReportService> _logger;
+        public ReportService(IFileService fileService, IRecordService recordService, ILogger<ReportService> logger)
         {
+            _logger = logger;
             _fileService = fileService;
             _recordService = recordService;
+            _logger.LogInformation("Report service sucesfully instanciated");
         }
-        public ICollection<FileReport> GetReports(string rootPath)
+        public ICollection<FileReport> GetReports(string analysedFolderPath)
         {
-            ICollection<FileReport> reports = new List<FileReport>();
-            ICollection<FileInfo> filesFromRecord = new List<FileInfo>();
-            ICollection<FileInfo> analysedFiles = new List<FileInfo>();
-
-            analysedFiles = _fileService.GetFilesByPath(rootPath);
-            if (_recordService.TryGetLastRecordedFilesByRootPath(rootPath, out filesFromRecord))
+            try
             {
-                reports = CompareAndConvert(reports, filesFromRecord, ref analysedFiles);
-                _recordService.SaveRecord(analysedFiles);
+                _logger.LogInformation($"Getting reports for folder {analysedFolderPath}");
+                ICollection<FileReport> reports = new List<FileReport>();
+                ICollection<FileInfo> filesFromRecord = new List<FileInfo>();
+                ICollection<FileInfo> analysedFiles = new List<FileInfo>();
+
+                analysedFiles = _fileService.GetFilesByPath(analysedFolderPath);
+                if (_recordService.TryGetLastRecordedFilesByAnalysedFolderPath(analysedFolderPath, out filesFromRecord))
+                {
+                    _logger.LogInformation($"Record for this folder found");
+                    reports = CompareAndConvert(reports, filesFromRecord, ref analysedFiles);
+                    _recordService.SaveRecord(analysedFiles);
+                    return reports;
+                }
+                _logger.LogWarning($"Record for this folder not found");
+                reports = Convert(reports, ref analysedFiles);
+                _recordService.SaveRecord(analysedFiles, analysedFolderPath);
                 return reports;
             }
-            reports = Convert(reports, ref analysedFiles);
-            _recordService.SaveRecord(analysedFiles, rootPath);
-            return reports;
+            catch(Exception ex)
+            {
+                _logger.LogError(ex.Message, ex);
+                throw;
+            }
         }
 
         private ICollection<FileReport> CompareAndConvert(ICollection<FileReport> reports, ICollection<FileInfo> filesFromRecord, ref ICollection<FileInfo> analysedFiles)
         {
-            Parallel.ForEach(analysedFiles, file =>
+            try
             {
-                var report = new FileReport()
+                _logger.LogInformation("Comparing recorded files and newly analysed files and creating report");
+                foreach (var file in analysedFiles)
                 {
-                    FileName = file.Name,
-                };
-                var recordFile = filesFromRecord.Where(f => f.Name == file.Name).FirstOrDefault();
-                if (recordFile != null)
-                {
-                    file.Version = recordFile.Version;
-                    if (recordFile.FileHash == file.FileHash)
+                    var report = new FileReport()
                     {
-                        report.State = Common.Enums.FileState.Unchanged;
+                        FileName = file.Name,
+                    };
+                    _logger.LogInformation($"Checking file {file.Name}");
+                    var recordFile = filesFromRecord.Where(f => f.Name == file.Name).FirstOrDefault();
+                    if (recordFile != null)
+                    {
+                        file.Version = recordFile.Version;
+                        if (recordFile.FileHash == file.FileHash)
+                        {
+                            report.State = Common.Enums.FileState.Unchanged;
+                            _logger.LogInformation($"File wasn't modified. Current version: {file.Version}");
+                        }
+                        else
+                        {
+                            report.State = Common.Enums.FileState.Modified;
+                            file.Version++;
+                            _logger.LogInformation($"File was modified. New version: {file.Version}");
+                        }
+                        filesFromRecord.Remove(recordFile);
                     }
                     else
                     {
-                        report.State = Common.Enums.FileState.Modified;
-                        file.Version++;
+                        _logger.LogInformation("This file is new or added after last analysis");
+                        report.State = Common.Enums.FileState.Added;
+                        file.Version = 1;
                     }
-                    filesFromRecord.Remove(recordFile);
+                    report.Version = file.Version;
+                    _logger.LogInformation("Adding file informations to reports");
+                    reports.Add(report);
                 }
-                else
+                foreach (var remainingRecordFile in filesFromRecord)
                 {
-                    report.State = Common.Enums.FileState.Added;
-                    file.Version = 1;
+                    _logger.LogInformation($"File {remainingRecordFile.Name} was deleted " +
+                        $"on version {remainingRecordFile.Version}. Adding to reports");
+                    reports.Add(new()
+                    {
+                        FileName = remainingRecordFile.Name,
+                        Version = remainingRecordFile.Version,
+                        State = Common.Enums.FileState.Deleted
+                    });
                 }
-                report.Version = file.Version;
-                reports.Add(report);
-            });
-            foreach (var remainingRecordFiles in filesFromRecord)
-            {
-                reports.Add(new()
-                {
-                    FileName=remainingRecordFiles.Name,
-                    State = Common.Enums.FileState.Deleted
-                });
+                return reports;
             }
-            return reports;
+            catch (Exception ex)
+            {
+                throw new("Something went wrong when comparing analysed files with recorded files or during reports creation", ex);
+            }
         }
         private ICollection<FileReport> Convert(ICollection<FileReport> reports, ref ICollection<FileInfo> analysedFiles)
         {
-            Parallel.ForEach(analysedFiles, file =>
+            try
             {
-                file.Version = 1;
-                reports.Add(new()
+                foreach (var file in analysedFiles)
                 {
-                    FileName = file.Name,
-                    State = Common.Enums.FileState.Unchanged,
-                    Version = file.Version
-                });
-            });
-            return reports;
+                    _logger.LogInformation($"Adding file {file.Name} to report");
+                    file.Version = 1;
+                    reports.Add(new()
+                    {
+                        FileName = file.Name,
+                        State = Common.Enums.FileState.Added,
+                        Version = file.Version
+                    });
+                }
+                return reports;
+            }
+            catch (Exception ex)
+            {
+                throw new("Something went wrong when comparing analysed files with recorded files or during reports creation", ex);
+            }
         }
     }
 }

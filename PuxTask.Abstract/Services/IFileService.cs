@@ -4,6 +4,6 @@ namespace PuxTask.Abstract
 {
     public interface IFileService
     {
-        ICollection<FileInfo> GetFilesByPath(string rootPath);
+        ICollection<FileInfo> GetFilesByPath(string analysedFolderPath);
     }
 }

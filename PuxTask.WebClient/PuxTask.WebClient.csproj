@@ -6,4 +6,10 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\PuxTask.Abstract\PuxTask.Abstract.csproj" />
+    <ProjectReference Include="..\PuxTask.Common\PuxTask.Common.csproj" />
+    <ProjectReference Include="..\PuxTask.Core\PuxTask.Core.csproj" />
+  </ItemGroup>
+
 </Project>

@@ -4,6 +4,6 @@ namespace PuxTask.Abstract
 {
     public interface IReportService
     {
-        ICollection<FileReport> GetReports(string rootPath);
+        ICollection<FileReport> GetReports(string analysedFolderPath);
     }
 }

@@ -1,0 +1,29 @@
+﻿@model AnalysisViewModel
+
+<div class="text-center">
+    <form asp-action="Index">
+        <div class="form-group">
+            <label class="control-label">Path</label>
+            <input asp-for="analysedFolderPath" class="form-control" />
+        </div>
+        <div class="form-group">
+            <input type="submit" value="Analyse" class="btn btn-primary" />
+        </div>
+    </form>
+    @if (Model.Reports is not null && Model.Reports.Count > 0){
+        <table>
+            <tr>
+                <th>File name</th>
+                <th>File version</th>
+                <th>File state</th>
+            </tr>
+            @foreach(var report in Model.Reports){
+                <tr>
+                    <td>@report.FileName</td>
+                    <td>@report.Version</td>
+                    <td>@report.State</td>
+                </tr>
+            }
+        </table>
+    }
+</div>

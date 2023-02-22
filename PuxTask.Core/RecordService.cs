@@ -1,5 +1,7 @@
-﻿using PuxTask.Abstract;
+﻿using Microsoft.Extensions.Logging;
+using PuxTask.Abstract;
 using PuxTask.Common.Entities;
+using PuxTask.Common.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,9 +16,12 @@ namespace PuxTask.Core
     {
         private AnalysisRecord openedRecord;
         private readonly string recordStorage;
+        private readonly ILogger<RecordService> _logger;
         //private readonly string archivesStorage;
-        public RecordService()
+        public RecordService(ILogger<RecordService> logger)
         {
+            _logger = logger;
+
             //Get AppData path
             var appdata = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
             recordStorage = Path.Combine(appdata, "Records");
@@ -25,46 +30,71 @@ namespace PuxTask.Core
             if (!Directory.Exists(recordStorage))
                 Directory.CreateDirectory(recordStorage);
 
-            /*archivesStorage = Path.Combine(appdata, "Archives");
-            //Ensure archives storage existence
-            if (!Directory.Exists(archivesStorage))
-                Directory.CreateDirectory(archivesStorage);*/
+            _logger.LogInformation("Record service sucesfully instanciated");
         }
         #region Querry
-        public bool TryGetLastRecordedFilesByRootPath(string rootPath, out ICollection<FileInfo>? filesFromRecord)
+        public bool TryGetLastRecordedFilesByAnalysedFolderPath(string analysedFolderPath, out ICollection<FileInfo>? filesFromRecord)
         {
-            string recordPath = Path.Combine(recordStorage + "record_" + rootPath + ".json");
-            if (File.Exists(recordPath))
+            try
             {
-                using (FileStream openFileStream = File.OpenRead(recordPath))
+                _logger.LogInformation($"Looking for analysis record of directory {analysedFolderPath}");
+                analysedFolderPath = analysedFolderPath.Replace("\\", "_").Replace(":", "_");
+                string recordPath = Path.Combine(recordStorage, ("record_" + analysedFolderPath + ".json"));
+                if (File.Exists(recordPath))
                 {
-                    filesFromRecord = JsonSerializer.Deserialize<AnalysisRecord>(openFileStream).Files;
+                    _logger.LogInformation($"Record found. Location: {recordPath}");
+                    using (FileStream openFileStream = File.OpenRead(recordPath))
+                    {
+                        var record = JsonSerializer.Deserialize<AnalysisRecord>(openFileStream);
+                        if (openedRecord is null || !openedRecord.Equals(record))
+                        {
+                            openedRecord = record;
+                            _logger.LogInformation("Caching new record");
+                        }
+                        filesFromRecord = record.Files;
+                    }
+                    return true;
                 }
-                return true;
+                _logger.LogInformation($"Record not found. Application will create new record after the analysis is finished");
+                filesFromRecord = null;
+                return false;
             }
-            filesFromRecord = null;
-            return false;
+            catch (Exception ex)
+            {
+                throw new("Something went wrong when trying to get last record for "+analysedFolderPath, ex);
+            }
         }
         #endregion
         #region Command
         /// <summary>
-        /// Creates new record, named with the given rootPath
+        /// Creates new record, named with the given analysedFolderPath
         /// </summary>
         /// <param name="files">Analysed files</param>
-        /// <param name="rootPath">Analysed path given by user</param>
-        public void SaveRecord(ICollection<FileInfo> files, string rootPath)
+        /// <param name="analysedFolderPath">Analysed path given by user</param>
+        public void SaveRecord(ICollection<FileInfo> files, string analysedFolderPath)
         {
-            string recordPath = Path.Combine(recordStorage + "record_" + rootPath + ".json");
-            var analysisRecord = new AnalysisRecord()
+            try
             {
-                Files = files,
-                RootFolderPath = rootPath,
-                Created = DateTime.Now,
-                Updated = DateTime.Now,
-            };
-            using (FileStream createFileStream = File.Create(recordPath))
+                _logger.LogInformation("Creating new analysis record for directory " + analysedFolderPath);
+                analysedFolderPath = analysedFolderPath.Replace("\\", "_").Replace(":", "_");
+                string recordPath = Path.Combine(recordStorage, ("record_" + analysedFolderPath + ".json"));
+                var analysisRecord = new AnalysisRecord()
+                {
+                    Files = files,
+                    AnalysedFolderPath = analysedFolderPath,
+                    Created = DateTime.Now,
+                    Updated = DateTime.Now,
+                };
+                _logger.LogInformation("Record created. Location: " + recordPath);
+                using (FileStream createFileStream = File.Create(recordPath))
+                {
+                    JsonSerializer.Serialize(createFileStream, analysisRecord);
+                    _logger.LogInformation("Record filled with data and saved sucesfully");
+                }
+            }
+            catch (Exception ex)
             {
-                JsonSerializer.Serialize(createFileStream, analysisRecord);
+                throw new("Something went wrong when creating new record", ex);
             }
         }
         /// <summary>
@@ -73,15 +103,33 @@ namespace PuxTask.Core
         /// <param name="files">Analysed files</param>
         public void SaveRecord(ICollection<FileInfo> files)
         {
-            if (openedRecord is not null)
+            try
             {
-                openedRecord.Files = files;
-                openedRecord.Updated = DateTime.Now;
-                string recordPath = Path.Combine(recordStorage + "record_" + openedRecord.RootFolderPath + ".json");
-                using (FileStream writeFileStream = File.OpenWrite(recordPath))
+                var analysedFolderPath = openedRecord.AnalysedFolderPath.Replace("\\", "_").Replace(":", "_");
+                _logger.LogInformation("Updatind analysis record. Location: " + analysedFolderPath);
+                if (openedRecord is not null)
                 {
-                    JsonSerializer.Serialize(writeFileStream, openedRecord);
+                    openedRecord.Files = files;
+                    openedRecord.Updated = DateTime.Now;
+                    string recordPath = Path.Combine(recordStorage, ("record_" + analysedFolderPath + ".json"));
+                    using (FileStream writeFileStream = File.OpenWrite(recordPath))
+                    {
+                        writeFileStream.SetLength(0);
+                        JsonSerializer.Serialize(writeFileStream, openedRecord);
+                    }
                 }
+                else
+                {
+                    throw new NullCachedRecordException("Record, which was supposed to be cached, was null");
+                }
+            }
+            catch (NullCachedRecordException ex)
+            {
+                throw ex;
+            }
+            catch (Exception ex)
+            {
+                throw new("Something went wrong when updating record", ex);
             }
         }
         #endregion
