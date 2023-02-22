@@ -9,7 +9,7 @@ namespace PuxTask.Common.Entities
 {
     public class FileReport
     {
-        public string Name { get; set; }
+        public string FileName { get; set; }
         public int Version { get; set; }
         public FileState State { get; set; }
     }

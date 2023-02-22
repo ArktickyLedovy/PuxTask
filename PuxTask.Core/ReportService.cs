@@ -1,10 +1,5 @@
 ﻿using PuxTask.Abstract;
 using PuxTask.Common.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using FileInfo = PuxTask.Common.Entities.FileInfo;
 
 namespace PuxTask.Core
@@ -35,13 +30,14 @@ namespace PuxTask.Core
             _recordService.SaveRecord(analysedFiles, rootPath);
             return reports;
         }
+
         private ICollection<FileReport> CompareAndConvert(ICollection<FileReport> reports, ICollection<FileInfo> filesFromRecord, ref ICollection<FileInfo> analysedFiles)
         {
             Parallel.ForEach(analysedFiles, file =>
             {
                 var report = new FileReport()
                 {
-                    Name = file.Name,
+                    FileName = file.Name,
                 };
                 var recordFile = filesFromRecord.Where(f => f.Name == file.Name).FirstOrDefault();
                 if (recordFile != null)
@@ -70,7 +66,7 @@ namespace PuxTask.Core
             {
                 reports.Add(new()
                 {
-                    Name=remainingRecordFiles.Name,
+                    FileName=remainingRecordFiles.Name,
                     State = Common.Enums.FileState.Deleted
                 });
             }
@@ -83,7 +79,7 @@ namespace PuxTask.Core
                 file.Version = 1;
                 reports.Add(new()
                 {
-                    Name = file.Name,
+                    FileName = file.Name,
                     State = Common.Enums.FileState.Unchanged,
                     Version = file.Version
                 });
