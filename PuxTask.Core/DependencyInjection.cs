@@ -1,15 +1,14 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using PuxTask.Abstract;
+﻿using PuxTask.Abstract;
+using PuxTask.Core;
 
-namespace PuxTask.Core
+namespace Microsoft.Extensions.DependencyInjection;
+public static class DependencyInjection
 {
-    public static class DependencyInjection
+    public static IServiceCollection AddProjectServices(this IServiceCollection services)
     {
-        public static IServiceCollection AddServices(this IServiceCollection services) {
-            services.AddScoped<IFileService, FileService>();
-            services.AddScoped<IRecordService, RecordService>();
-            services.AddScoped<IReportService, ReportService>();
-            return services;
-        }
+        services.AddScoped<IFileService, FileService>();
+        services.AddScoped<IRecordService, RecordService>();
+        services.AddScoped<IReportService, ReportService>();
+        return services;
     }
 }
