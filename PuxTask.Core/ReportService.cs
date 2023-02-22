@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using PuxTask.Abstract;
 using PuxTask.Common.Entities;
-using System.Linq.Expressions;
+using PuxTask.Common.Exceptions;
 using FileInfo = PuxTask.Common.Entities.FileInfo;
 
 namespace PuxTask.Core
@@ -22,23 +22,28 @@ namespace PuxTask.Core
         {
             try
             {
-                _logger.LogInformation($"Getting reports for folder {analysedFolderPath}");
-                ICollection<FileReport> reports = new List<FileReport>();
-                ICollection<FileInfo> filesFromRecord = new List<FileInfo>();
-                ICollection<FileInfo> analysedFiles = new List<FileInfo>();
-
-                analysedFiles = _fileService.GetFilesByPath(analysedFolderPath);
-                if (_recordService.TryGetLastRecordedFilesByAnalysedFolderPath(analysedFolderPath, out filesFromRecord))
+                analysedFolderPath.Trim();
+                if (analysedFolderPath != null)
                 {
-                    _logger.LogInformation($"Record for this folder found");
-                    reports = CompareAndConvert(reports, filesFromRecord, ref analysedFiles);
-                    _recordService.SaveRecord(analysedFiles);
+                    _logger.LogInformation($"Getting reports for folder {analysedFolderPath}");
+                    ICollection<FileReport> reports = new List<FileReport>();
+                    ICollection<FileInfo> filesFromRecord = new List<FileInfo>();
+                    ICollection<FileInfo> analysedFiles = new List<FileInfo>();
+
+                    analysedFiles = _fileService.GetFilesByPath(analysedFolderPath);
+                    if (_recordService.TryGetLastRecordedFilesByAnalysedFolderPath(analysedFolderPath, out filesFromRecord))
+                    {
+                        _logger.LogInformation($"Record for this folder found");
+                        reports = CompareAndConvert(reports, filesFromRecord, ref analysedFiles);
+                        _recordService.SaveRecord(analysedFiles);
+                        return reports;
+                    }
+                    _logger.LogWarning($"Record for this folder not found");
+                    reports = Convert(reports, ref analysedFiles);
+                    _recordService.SaveRecord(analysedFiles, analysedFolderPath);
                     return reports;
                 }
-                _logger.LogWarning($"Record for this folder not found");
-                reports = Convert(reports, ref analysedFiles);
-                _recordService.SaveRecord(analysedFiles, analysedFolderPath);
-                return reports;
+                throw new InvalidPathException("Entered path was null or empty");
             }
             catch(Exception ex)
             {

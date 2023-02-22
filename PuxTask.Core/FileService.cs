@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using PuxTask.Abstract;
+using PuxTask.Common.Exceptions;
 using FileInfo = PuxTask.Common.Entities.FileInfo;
 
 namespace PuxTask.Core
@@ -17,20 +18,28 @@ namespace PuxTask.Core
         {
             try
             {
-                _logger.LogInformation("Getting files in directory" + analysedFolderPath);
-                var files = new List<FileInfo>();
-                string[] allPaths = Directory.GetFiles(analysedFolderPath, "*.*", SearchOption.AllDirectories);
-                foreach (var filePath in allPaths)
+                if (Directory.Exists(analysedFolderPath))
                 {
-                    using (FileStream stream = File.OpenRead(filePath))
+                    _logger.LogInformation("Getting files in directory" + analysedFolderPath);
+                    var files = new List<FileInfo>();
+                    string[] allPaths = Directory.GetFiles(analysedFolderPath, "*.*", SearchOption.AllDirectories);
+                    foreach (var filePath in allPaths)
                     {
-                        using (BufferedStream bufferedStream = new BufferedStream(stream))
+                        using (FileStream stream = File.OpenRead(filePath))
                         {
-                            files.Add(new(stream, bufferedStream, analysedFolderPath));
+                            using (BufferedStream bufferedStream = new BufferedStream(stream))
+                            {
+                                files.Add(new(stream, bufferedStream, analysedFolderPath));
+                            }
                         }
                     }
+                    return files;
                 }
-                return files;
+                throw new InvalidPathException($"Directory on location {analysedFolderPath} does not exist. Path is invalid");
+            }
+            catch (InvalidPathException ex)
+            {
+                throw ex;
             }
             catch (Exception ex)
             {
