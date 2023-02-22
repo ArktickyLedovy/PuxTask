@@ -26,7 +26,7 @@ namespace PuxTask.Core
                 analysedFolderPath.Trim();
                 if (analysedFolderPath != null)
                 {
-                    _logger.LogInformation($"Getting reports for folder {analysedFolderPath}");
+                    _logger.LogInformation($"Creating report for folder {analysedFolderPath}");
                     Report report = new(new List<FileReport>(), "Folder not analysed");
                     ICollection<FileInfo> filesFromRecord = new List<FileInfo>();
                     ICollection<FileInfo> analysedFiles = new List<FileInfo>();
@@ -80,6 +80,7 @@ namespace PuxTask.Core
                         {
                             fileReport.State = Common.Enums.FileState.Modified;
                             file.Version++;
+                            changes = true;
                             _logger.LogInformation($"File was modified. New version: {file.Version}");
                         }
                         filesFromRecord.Remove(recordFile);
@@ -89,9 +90,10 @@ namespace PuxTask.Core
                         _logger.LogInformation("This file is new or added after last analysis");
                         fileReport.State = Common.Enums.FileState.Added;
                         file.Version = 1;
+                        changes = true;
                     }
                     fileReport.Version = file.Version;
-                    _logger.LogInformation("Adding file informations to report.FileReports");
+                    _logger.LogInformation("Adding file informations to report");
                     report.FileReports.Add(fileReport);
                 }
                 foreach (var remainingRecordFile in filesFromRecord)
@@ -104,9 +106,10 @@ namespace PuxTask.Core
                         Version = remainingRecordFile.Version,
                         State = Common.Enums.FileState.Deleted
                     });
+                    changes = true;
                 }
                 report.MessageForUser = $"Totally checked {recordedFilesCount} files from last record " +
-                    $"and {analysedFiles} newly analysed files. \n" +
+                    $"and {analysedFiles.Count} newly analysed files. \n" +
                     $"There " + (changes ? "were some":"weren\'t any") + " changes registered and added to record";
                 return report;
             }
@@ -130,7 +133,7 @@ namespace PuxTask.Core
                         Version = file.Version
                     });
                 }
-                report.MessageForUser = $"Totally checked {analysedFiles} newly analysed files and added to record.";
+                report.MessageForUser = $"Totally checked {analysedFiles.Count} newly analysed files and added to record.";
                 return report;
             }
             catch (Exception ex)

@@ -24,12 +24,12 @@ namespace PuxTask.WebClient.Controllers
         public ActionResult Index(AnalysisViewModel vm) 
         {
             var startTime = DateTime.Now;
-            _logger.LogInformation("Analysis started. Time: "+startTime.ToShortTimeString);
-            vm.Reports = _reportService.GetReports(vm.analysedFolderPath);
+            _logger.LogInformation("Analysis started. Time: "+startTime.ToShortTimeString());
+            vm.Report = _reportService.GetReports(vm.analysedFolderPath);
             _logger.LogInformation($"Analysis finished. " +
-                $"Time: {DateTime.Now.ToShortTimeString} " +
-                $"Duration: {(DateTime.Now.Millisecond - startTime.Millisecond)} ms" +
-                $"Files checked: {vm.Reports.Count}");
+                $"Time: {DateTime.Now.ToShortTimeString()} " +
+                $"Duration: {(DateTime.Now.Millisecond - startTime.Millisecond)} ms " +
+                $"Files checked: {vm.Report.FileReports.Count}");
             return View(vm); 
         }
     }

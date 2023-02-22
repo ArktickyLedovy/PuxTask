@@ -1,4 +1,5 @@
-﻿@model AnalysisViewModel
+﻿@using PuxTask.Common.Enums
+@model AnalysisViewModel
 
 <div class="text-center">
     <form asp-action="Index">
@@ -10,19 +11,37 @@
             <input type="submit" value="Analyse" class="btn btn-primary" />
         </div>
     </form>
-    @if (Model.Reports is not null && Model.Reports.Count > 0){
-        <table>
-            <tr>
-                <th>File name</th>
-                <th>File version</th>
-                <th>File state</th>
-            </tr>
-            @foreach(var report in Model.Reports){
+    @if (Model.Report is not null && Model.Report.FileReports is not null)
+    {
+        @Model.Report.MessageForUser
+            <table>
                 <tr>
-                    <td>@report.FileName</td>
-                    <td>@report.Version</td>
-                    <td>@report.State</td>
+                    <th>File name</th>
+                    <th>File version</th>
+                    <th>File state</th>
                 </tr>
+            @foreach (var report in Model.Report.FileReports)
+            {
+                    string color = "";
+                @switch(report.State){
+                    case FileState.Unchanged:
+                            color = "RGB(189, 189, 189)";
+                            break;
+                    case FileState.Added:
+                            color = "RGB(169, 240, 158)";
+                    break;
+                    case FileState.Modified:
+                            color = "RGB(149, 184, 230)";
+                    break;
+                    case FileState.Deleted:
+                            color = "RGB(250, 167, 167)";
+                    break;
+                } 
+                    <tr style="background-color: @color">
+                <td>@report.FileName</td>
+                <td>@report.Version</td>
+                <td>@report.State</td>
+            </tr>
             }
         </table>
     }

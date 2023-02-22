@@ -105,13 +105,13 @@ namespace PuxTask.Core
         {
             try
             {
-                var analysedFolderPath = openedRecord.AnalysedFolderPath.Replace("\\", "_").Replace(":", "_");
-                _logger.LogInformation("Updatind analysis record. Location: " + analysedFolderPath);
                 if (openedRecord is not null)
                 {
+                    var analysedFolderPath = openedRecord.AnalysedFolderPath.Replace("\\", "_").Replace(":", "_");
                     openedRecord.Files = files;
                     openedRecord.Updated = DateTime.Now;
                     string recordPath = Path.Combine(recordStorage, ("record_" + analysedFolderPath + ".json"));
+                    _logger.LogInformation("Updatind analysis record. Location: " + recordPath);
                     using (FileStream writeFileStream = File.OpenWrite(recordPath))
                     {
                         writeFileStream.SetLength(0);

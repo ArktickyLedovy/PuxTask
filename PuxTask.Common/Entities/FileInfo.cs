@@ -10,7 +10,7 @@ namespace PuxTask.Common.Entities
         public FileInfo(){}
         public FileInfo(FileStream stream, BufferedStream bufferedStream, string analysedFolderPath)
         {
-            using (SHA1Managed sha1 = new SHA1Managed())
+            using (var sha1 = new SHA1Managed())
             {
                 FileHash = Convert.ToBase64String(sha1.ComputeHash(stream));
             }
