@@ -25,10 +25,10 @@ namespace PuxTask.WebClient.Controllers
         {
             var startTime = DateTime.Now;
             _logger.LogInformation("Analysis started. Time: "+startTime.ToShortTimeString());
-            vm.Report = _reportService.GetReports(vm.analysedFolderPath);
+            vm.Report = _reportService.GetReport(vm.analysedFolderPath);
             _logger.LogInformation($"Analysis finished. " +
                 $"Time: {DateTime.Now.ToShortTimeString()} " +
-                $"Duration: {(DateTime.Now.Millisecond - startTime.Millisecond)} ms " +
+                $"Duration: {(DateTime.Now - startTime).Milliseconds} ms " +
                 $"Files checked: {vm.Report.FileReports.Count}");
             return View(vm); 
         }

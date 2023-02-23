@@ -59,6 +59,12 @@ namespace PuxTask.Core
                 filesFromRecord = null;
                 return false;
             }
+            catch (JsonException ex)
+            {
+                _logger.LogError("Unable to deserialize last record. Application will ignore it and act like there's none", ex);
+                filesFromRecord = null;
+                return false;
+            }
             catch (Exception ex)
             {
                 throw new("Something went wrong when trying to get last record for "+analysedFolderPath, ex);

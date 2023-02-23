@@ -16,3 +16,45 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+input{
+    margin-top: 10px;
+}
+
+.analysis-window {
+    background-color: rgb(242, 242, 242);
+    padding: 20px;
+    border-radius: 10px;
+}
+.analysis-form {
+    background-color: rgb(242, 242, 242);
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 30px;
+}
+.user-message {
+    border-bottom: solid 2px rgb(150, 150, 150);
+    font-weight: 700;
+    font-size: 15px;
+    text-align: center;
+}
+.user-message p{
+    color: rgb(56, 46, 46);
+}
+table {
+    margin: 0 auto;
+    margin-top: 10px;
+}
+th {
+    border-bottom: 1px solid lightgrey;
+    padding-bottom: 5px;
+}
+td {
+    padding: 5px;
+    border-bottom: 4px solid rgb(255, 255, 255);
+}
+.additional-form-info{
+    margin-top: 30px;
+    font-size: 12px;
+    font-style: italic;
+}

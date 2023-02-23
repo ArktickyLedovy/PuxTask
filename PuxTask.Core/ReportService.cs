@@ -19,12 +19,11 @@ namespace PuxTask.Core
             _recordService = recordService;
             _logger.LogInformation("Report service sucesfully instanciated");
         }
-        public Report GetReports(string analysedFolderPath)
+        public Report GetReport(string analysedFolderPath)
         {
             try
             {
-                analysedFolderPath.Trim();
-                if (analysedFolderPath != null)
+                if (!string.IsNullOrEmpty(analysedFolderPath))
                 {
                     _logger.LogInformation($"Creating report for folder {analysedFolderPath}");
                     Report report = new(new List<FileReport>(), "Folder not analysed");

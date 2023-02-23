@@ -2,47 +2,72 @@
 @model AnalysisViewModel
 
 <div class="text-center">
-    <form asp-action="Index">
+    <div class="container">
+        <div class="row">
+    <div class="col-sm-4">
+        <div class="analysis-form">
+            <form asp-action="Index">
         <div class="form-group">
-            <label class="control-label">Path</label>
+            <span class="control-label">Enter path here</span>
             <input asp-for="analysedFolderPath" class="form-control" />
         </div>
         <div class="form-group">
             <input type="submit" value="Analyse" class="btn btn-primary" />
         </div>
-    </form>
-    @if (Model.Report is not null && Model.Report.FileReports is not null)
-    {
-        @Model.Report.MessageForUser
-            <table>
-                <tr>
-                    <th>File name</th>
-                    <th>File version</th>
-                    <th>File state</th>
-                </tr>
-            @foreach (var report in Model.Report.FileReports)
-            {
-                    string color = "";
-                @switch(report.State){
-                    case FileState.Unchanged:
-                            color = "RGB(189, 189, 189)";
-                            break;
-                    case FileState.Added:
-                            color = "RGB(169, 240, 158)";
-                    break;
-                    case FileState.Modified:
-                            color = "RGB(149, 184, 230)";
-                    break;
-                    case FileState.Deleted:
-                            color = "RGB(250, 167, 167)";
-                    break;
-                } 
-                    <tr style="background-color: @color">
-                <td>@report.FileName</td>
-                <td>@report.Version</td>
-                <td>@report.State</td>
-            </tr>
-            }
-        </table>
-    }
+        <p class="additional-form-info">Accepts both absolute and relative path</p>
+        </form>
+        </div>
+        
+    </div>
+    <div class="col-sm-8">
+        <div class="analysis-window">
+        @if (Model.Report is not null && Model.Report.FileReports is not null)
+        {
+            
+                <div class="user-message">
+                        <p>@Model.Report.MessageForUser</p>
+                </div>
+                <div class="analysis-table">
+                    <table>
+                        <tr>
+                            <th>File name</th>
+                            <th>File version</th>
+                            <th>File state</th>
+                        </tr>
+                        @foreach (var report in Model.Report.FileReports)
+                        {
+                            string color = "";
+                            @switch (report.State)
+                            {
+                                case FileState.Unchanged:
+                                            color = "RGB(209, 209, 209)";
+                                    break;
+                                case FileState.Added:
+                                            color = "RGB(182, 255, 167)";
+                                    break;
+                                case FileState.Modified:
+                                            color = "RGB(174, 195, 243)";
+                                    break;
+                                case FileState.Deleted:
+                                            color = "RGB(237, 134, 134)";
+                                    break;
+                            } 
+                            <tr style="background-color: @color">
+                                <td>@report.FileName</td>
+                                <td>@report.Version</td>
+                                <td>@report.State</td>
+                            </tr>
+                        }
+                    </table>
+                </div>
+            
+        }
+        else{
+            <h6>Your analysis will be displayed here</h6>
+        }
+        </div>
+    </div>
+        </div>
+
+    </div>
 </div>
