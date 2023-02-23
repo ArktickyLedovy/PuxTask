@@ -24,7 +24,13 @@ namespace PuxTask.Core
             {
                 if (Directory.Exists(analysedFolderPath))
                 {
-                    _logger.LogInformation("Getting files in directory" + analysedFolderPath);
+                    //Change relative path to absolute
+                    if (!Path.IsPathRooted(analysedFolderPath))
+                    {
+                        _logger.LogInformation($"Path from input is relative: {analysedFolderPath}. Changing to absolute");
+                        analysedFolderPath = Path.GetFullPath(analysedFolderPath);
+                    }
+                    _logger.LogInformation("Getting files in directory " + analysedFolderPath);
                     var files = new List<FileInfo>();
                     string[] allPaths = Directory.GetFiles(analysedFolderPath, "*.*", SearchOption.AllDirectories);
                     foreach (var filePath in allPaths)
