@@ -16,9 +16,9 @@ namespace PuxTask.Core
         /// <summary>
         /// Gets files from given directory
         /// </summary>
-        /// <param name="analysedFolderPath">Path from input</param>
+        /// <param name="analysedFolderPath">Path from input - as ref, because od the relative path determination</param>
         /// <returns>File infos</returns>
-        public ICollection<FileInfo> GetFilesByPath(string analysedFolderPath)
+        public ICollection<FileInfo> GetFilesByPath(ref string analysedFolderPath)
         {
             try
             {

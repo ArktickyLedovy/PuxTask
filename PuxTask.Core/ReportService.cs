@@ -36,7 +36,7 @@ namespace PuxTask.Core
                     ICollection<FileInfo> filesFromRecord = new List<FileInfo>();
                     ICollection<FileInfo> analysedFiles = new List<FileInfo>();
 
-                    analysedFiles = _fileService.GetFilesByPath(analysedFolderPath);
+                    analysedFiles = _fileService.GetFilesByPath(ref analysedFolderPath);
                     if (_recordService.TryGetLastRecordedFilesByAnalysedFolderPath(analysedFolderPath, out filesFromRecord))
                     {
                         _logger.LogInformation($"Record for this folder found");
