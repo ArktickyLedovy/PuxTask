@@ -13,7 +13,11 @@ namespace PuxTask.Core
             _logger = logger;
             _logger.LogInformation("File service sucesfully instanciated");
         }
-
+        /// <summary>
+        /// Gets files from given directory
+        /// </summary>
+        /// <param name="analysedFolderPath">Path from input</param>
+        /// <returns>File infos</returns>
         public ICollection<FileInfo> GetFilesByPath(string analysedFolderPath)
         {
             try

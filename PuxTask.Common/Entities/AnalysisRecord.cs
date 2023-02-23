@@ -2,7 +2,6 @@
 {
     public class AnalysisRecord
     {
-        //public Guid ArchiveID { get; set; } = default!;
         public string AnalysedFolderPath { get; set; } = default!;
         public DateTime Created { get; set; } = default!;
         public DateTime Updated { get; set; } = default!;

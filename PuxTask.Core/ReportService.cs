@@ -19,6 +19,12 @@ namespace PuxTask.Core
             _recordService = recordService;
             _logger.LogInformation("Report service sucesfully instanciated");
         }
+        /// <summary>
+        /// Creates report for given path
+        /// </summary>
+        /// <param name="analysedFolderPath">path to directory given by user</param>
+        /// <returns>Report</returns>
+        /// <exception cref="InvalidPathException">Path is invalid</exception>
         public Report GetReport(string analysedFolderPath)
         {
             try
@@ -51,7 +57,13 @@ namespace PuxTask.Core
                 throw;
             }
         }
-
+        /// <summary>
+        /// If record exists, compares files from record and from new analyse
+        /// </summary>
+        /// <param name="report">Instance of report</param>
+        /// <param name="filesFromRecord">Files from record</param>
+        /// <param name="analysedFiles">Newly analysed files</param>
+        /// <returns>Filled report</returns>
         private Report CompareAndConvert(Report report, ICollection<FileInfo> filesFromRecord, ref ICollection<FileInfo> analysedFiles)
         {
             try
@@ -117,6 +129,12 @@ namespace PuxTask.Core
                 throw new("Something went wrong when comparing analysed files with recorded files or during report.FileReports creation", ex);
             }
         }
+        /// <summary>
+        /// If record doesn't exist, creates new report based on analyse
+        /// </summary>
+        /// <param name="report">Report instance</param>
+        /// <param name="analysedFiles">Analysed files</param>
+        /// <returns>Filled report</returns>
         private Report Convert(Report report, ref ICollection<FileInfo> analysedFiles)
         {
             try

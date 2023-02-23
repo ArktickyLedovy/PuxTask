@@ -33,6 +33,12 @@ namespace PuxTask.Core
             _logger.LogInformation("Record service sucesfully instanciated");
         }
         #region Querry
+        /// <summary>
+        /// Tries to get last record for given path. If found, return FileInfos and true. If not, returns false
+        /// </summary>
+        /// <param name="analysedFolderPath">Path given by user</param>
+        /// <param name="filesFromRecord"></param>
+        /// <returns></returns>
         public bool TryGetLastRecordedFilesByAnalysedFolderPath(string analysedFolderPath, out ICollection<FileInfo>? filesFromRecord)
         {
             try
