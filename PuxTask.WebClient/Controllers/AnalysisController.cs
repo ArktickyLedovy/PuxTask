@@ -23,13 +23,22 @@ namespace PuxTask.WebClient.Controllers
         [HttpPost]
         public ActionResult Index(AnalysisViewModel vm) 
         {
+            vm.ErrorMessage = string.Empty;
             var startTime = DateTime.Now;
             _logger.LogInformation("Analysis started. Time: "+startTime.ToShortTimeString());
-            vm.Report = _reportService.GetReport(vm.analysedFolderPath);
-            _logger.LogInformation($"Analysis finished. " +
-                $"Time: {DateTime.Now.ToShortTimeString()} " +
-                $"Duration: {(DateTime.Now - startTime).Milliseconds} ms " +
-                $"Files checked: {vm.Report.FileReports.Count}");
+            try
+            {
+                vm.Report = _reportService.GetReport(vm.analysedFolderPath);
+                _logger.LogInformation($"Analysis finished. " +
+                    $"Time: {DateTime.Now.ToShortTimeString()} " +
+                    $"Duration: {(DateTime.Now - startTime).Milliseconds} ms " +
+                    $"Files checked: {vm.Report.FileReports.Count}");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"There was an error: {ex.Message}. \nStack trace: \n{ex.StackTrace}");
+                vm.ErrorMessage = ex.Message;
+            }
             return View(vm); 
         }
     }

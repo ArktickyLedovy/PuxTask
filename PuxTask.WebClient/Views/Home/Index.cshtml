@@ -2,7 +2,102 @@
     ViewData["Title"] = "Documentation";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="documentation">
+    <h1 class="display-4">PUX TASK</h1>
+    <h5><a href="#_Toc128059668">Task assignment (written in czech!)</a></h5>
+<h6><a href="#_Toc128059669">Assignment</a></h6>
+<h6><a href="#_Toc128059670">Examples</a></h6>
+<h5><a href="#_Toc128059671">User view</a></h5>
+<h6><a href="#_Toc128059672">Before analysis</a></h6>
+<h6><a href="#_Toc128059673">First analysis</a></h6>
+<h6><a href="#_Toc128059674">Repeated analysis</a></h6>
+<h6><a href="#_Toc128059675">Absolute vs. Relative path</a></h6>
+<h5><a href="#_Toc128059676">Core Functionality</a></h5>
+<h6><a href="#_Toc128059677">Comparement</a></h6>
+<h5><a href="#_Toc128059678">Data storage</a></h5>
+<h5><a href="#_Toc128059679">Logging</a></h5>
+<h5><a href="#_Toc128059680">Vulnerabilities and limitations</a></h5>
+<p>&nbsp;</p>
+<h1><a name="_Toc128059306"></a><a name="_Toc128059668"></a>Task assignment (written in czech!)</h1>
+<h2><a name="_Toc128059307"></a><a name="_Toc128059669"></a>Assignment</h2>
+<img src="~/images/Assignment1.png" />
+<h2><a name="_Toc128059308"></a><a name="_Toc128059670"></a>Examples</h2>
+<img src="~/images/Assignment2.png" />
+<h1><a name="_Toc128059309"></a><a name="_Toc128059671"></a>User view</h1>
+<h2><a name="_Toc128059310"></a><a name="_Toc128059672"></a>Before analysis</h2>
+<p>Before creating analysis, form is displayed. There we can pass path to the folder we want to analyse</p>
+<img src="~/images/BeforeAnalysis1.png" />
+<p>For example, I&rsquo;ll use directory where is one of my 3D projects stored. It currently looks like this</p>
+<img src="~/images/BeforeAnalysis2.png" />
+<p>This folder also contains a subfolder &bdquo;Test folder&ldquo;. Application is going to check that too</p>
+<img src="~/images/BeforeAnalysis3.png" />
+<h2><a name="_Toc128059311"></a><a name="_Toc128059673"></a>First analysis</h2>
+<p>&nbsp;</p>
+<p>Because I analyse this folder for the first time, there won&rsquo;t be registered any changes and new record will be created</p>
+<img src="~/images/FirstAnalysis1.png" />
+<p>Click &bdquo;Analyse&ldquo;</p>
+<img src="~/images/FirstAnalysis2.png" />
+<p>Data from analysis were stored as a record in %appdata%/Records.</p>
+<h2><a name="_Toc128059312"></a><a name="_Toc128059674"></a>Repeated analysis</h2>
+<p>&nbsp;</p>
+<p>I&rsquo;ll now add new txt to the root folder and to the subfolder. I&rsquo;ll also delete the testimg file.</p>
+<img src="~/images/RepeatedAnalysis1.png" />
+<img src="~/images/RepeatedAnalysis2.png" />
+<p>And run analysis again.</p>
+<img src="~/images/RepeatedAnalysis3.png" />
+<p>As we can see at the up right, there&rsquo;s also a message informing us about the analysis state.</p>
+<p>I&rsquo;ll now modify one of the txts and run the analysis again.</p>
+<img src="~/images/RepeatedAnalysis4.png" />
+<img src="~/images/RepeatedAnalysis5.png" />
+<p>Modified file is on a higher version now. Everything else is unchanged, according to the last analysis record. If I run the analysis again and don&rsquo;t do anything in the analysis folder, there won&rsquo;t be any new changes registered.</p>
+<img src="~/images/RepeatedAnalysis6.png" />
+<p>Analysis records are updated with every new analysis, the older ones are then threw away and not stored anymore.</p>
+<h2><a name="_Toc128059313"></a><a name="_Toc128059675"></a>Absolute vs. Relative path</h2>
+<p>Application i also capable of accepting relative path, instead of absolute.</p>
+<img src="~/images/AbsRel1.png" />
+<h1><a name="_Toc128059314"></a><a name="_Toc128059676"></a>Core Functionality</h1>
+<img src="~/images/Diagram.png" />
+<h2><a name="_Toc128059315"></a><a name="_Toc128059677"></a>Comparement</h2>
+<p>Application is comparing files with theirs SHA1 Hashes (Most reliable approach)</p>
+<ul>
+<li>Unchanged
+<ul>
+<li>Hashes are the same for newly analysed file and file from record, OR the directory is analysed for the first time.</li>
+</ul>
+</li>
+<li>Added
+<ul>
+<li>Files are present in the new analyse, althought not in the last record.</li>
+</ul>
+</li>
+<li>Modified
+<ul>
+<li>Files are present in both new analyse and last record, but the hashes are not the same.</li>
+</ul>
+</li>
+<li>Deleted
+<ul>
+<li>Files are present in the record, but not in the analyse. Files are later removed from the record during update.</li>
+</ul>
+</li>
+</ul>
+<h1><a name="_Toc128059316"></a><a name="_Toc128059678"></a>Data storage</h1>
+<p>After analysis, records are created.</p>
+<p>Those are stored in %appdata% as json files. Reading and writing is made with default JsonSerializer</p>
+<img src="~/images/Storage.png" />
+<h1><a name="_Toc128059317"></a><a name="_Toc128059679"></a>Logging</h1>
+<p>Logging is handled by default logger.</p>
+<p>Currently logs only to Console.</p>
+<img src="~/images/Logs1.png" />
+<img src="~/images/Logs2.png" />
+<h1><a name="_Toc128059318"></a><a name="_Toc128059680"></a>Vulnerabilities and limitations</h1>
+<ul>
+<li>Logging only into console</li>
+<li>Application hardly handles huge files during GetFilesByPath() (this problem doesn&rsquo;t occur, where there are too many small files in directory)</li>
+<li>There are no unit tests written</li>
+<li>There may occur some problems according to permissions, for example on company machine</li>
+<li>Frontend side just looks bad</li>
+<li>Personally I&rsquo;d use Blazor webclient rather than ASP.NET MVC webclient, but it doesn&rsquo;t really make any difference on application this small. &ndash; <em>Can be implemented on demand.</em></li>
+<li>Records can be easily modified by user, thus application may malfunction</li>
+</ul>
 </div>

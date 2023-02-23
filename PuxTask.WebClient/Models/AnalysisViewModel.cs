@@ -6,5 +6,6 @@ namespace PuxTask.WebClient.Models
     {
         public string analysedFolderPath { get; set; }
         public Report Report {get; set;}
+        public string ErrorMessage { get; set; }
     }
 }
